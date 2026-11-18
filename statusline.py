@@ -13,6 +13,22 @@ def cut(s, w):  # truncate to w terminal columns (CJK = 2)
         if n + c > w: return out + '…'
         out += ch; n += c
     return out
+def bare(t): return t[1:].lstrip() if t[:1] and not t[0].isalnum() else t  # drop Claude Code's spinner prefix (✳ ◐ …)
+def tab_name(title, proj):  # the name the user sees on the terminal tab, if they renamed it there (Ghostty only)
+    if os.environ.get('TERM_PROGRAM') != 'ghostty' or not title: return title
+    import subprocess
+    q = ('tell application "Ghostty"\nset o to ""\nrepeat with w in windows\nrepeat with t in tabs of w\nset m to focused terminal of t\n'
+         'set o to o & (name of t) & (character id 9) & (name of m) & (character id 9) & (working directory of m) & linefeed\nend repeat\nend repeat\nreturn o\nend tell')
+    try: out = subprocess.run(['osascript', '-e', q], capture_output=True, text=True, timeout=2).stdout
+    except Exception: return title
+    hits = []
+    for row in out.splitlines():
+        parts = row.split('\t')
+        if len(parts) != 3: continue
+        tab, term, wd = parts
+        tab, term = bare(tab), bare(term)
+        if term == title and os.path.basename(wd.rstrip('/')).lower() == proj.lower(): hits.append(tab)
+    return hits[0] if len(hits) == 1 else title  # two tabs with the same title: can't tell which, keep Claude's title
 try: me = json.load(sys.stdin).get('session_id', '')
 except Exception: me = ''
 try:
@@ -36,7 +52,7 @@ lines = [f'{c}{"暴增" if spike else "偏高" if tot > OVER else "留意" if c 
 if c != D and s.get('tabs'):
     t = s['tabs'][0]  # the tab to go to: its own session plus all the agents it started
     v = t['usd'] if 'usd' in t else t.get('units', 0) * 3.3
-    lines.append(f'{c}{B}最耗的分頁{X}{c} →「{cut(t["doing"] or t["proj"], 24)}」{"（就是這個視窗）" if t["sid"] == me else ""} US${v:.1f} {D}含它開的 agent · {t["proj"]}{X}{c}{"；用不到就停掉" if over else ""}{X}')
+    lines.append(f'{c}{B}最耗的分頁{X}{c} →「{cut(tab_name(t["doing"], t["proj"]) or t["proj"], 24)}」{"（就是這個視窗）" if t["sid"] == me else ""} US${v:.1f} {D}含它開的 agent · {t["proj"]}{X}{c}{"；用不到就停掉" if over else ""}{X}')
 todo = {'login': '執行 /login', 'limit': '到 claude.ai/settings/usage 提高上限', 'offline': '檢查網路'}
 kname = {'login': '登入失效', 'limit': '用量到上限', 'offline': '連不上網'}
 for kind, b in (s.get('blocked') or {}).items():

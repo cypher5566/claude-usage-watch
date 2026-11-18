@@ -32,7 +32,7 @@ git clone https://github.com/cypher5566/claude-usage-watch ~/.claude-usage-watch
 
 - 算的是**整台電腦**所有 Claude Code 分頁、agent、`claude -p` 加起來，不只眼前這個視窗。
 - 近 30 分鐘超過 US$10 變黃（「留意」）、超過 US$20 變紅（「偏高」）；黃或紅時會多一行，標出最耗的是哪個分頁（含它開的 agent）、花了多少，紅的時候提醒用不到就停掉。
-- 分頁名稱用的是 Claude Code 記的標題。想自己取名，在那個分頁打 `/rename 名字`；在終端機 App（Ghostty、iTerm 等）改分頁標題，Claude Code 看不到，狀態列也就抓不到。
+- 分頁名稱跟你分頁上看到的一樣：在 Ghostty 自己改過分頁名稱，狀態列就顯示你改的名字；沒改過就用 Claude Code 自動取的標題。其他終端機 App 目前只顯示 Claude Code 的標題。
 - 登入失效、用量到上限、斷網、`claude -p` 同時超過 3 個，也會各多一行告訴你怎麼處理。
 
 **用 Claude Desktop 的人**：Desktop 的 Code 分頁裡跑在「這台電腦」的工作階段，一樣會被算進去（紀錄寫在同一個地方）。但 Desktop 不顯示狀態列，所以靠兩樣東西：超過門檻時右上角會跳 macOS 通知「Claude 用量警示」，加上下面的排行報告。

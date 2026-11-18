@@ -14,6 +14,7 @@ OVER_USD = 20  # rolling 30 min, whole machine; 7-day check 11/18: over this ~6%
 HOME_DIR = os.path.expanduser('~').replace('/', '-')  # how Claude Code names project folders: /Users/a/x -> -Users-a-x
 alerted, offs, last_ctx, labels, seen = set(), {}, {}, {}, {}
 titles, prompts, cwds = {}, collections.defaultdict(lambda: collections.deque(maxlen=3)), {}
+named = set()  # sessions the user titled with /rename; Claude Code keeps appending ai-title after it
 events = collections.deque()  # (epoch, transcript path, usd)
 last_err, last_ok = {}, {}  # per transcript: (epoch, kind, text) of the latest API error / epoch of the latest real reply
 QUIET = True
@@ -69,7 +70,8 @@ def scan():
                 try: d = json.loads(l)
                 except Exception: continue
                 if d.get('cwd'): cwds[p] = cwds[os.path.dirname(os.path.dirname(p)) + '.jsonl' if '/subagents/' in p else p] = d['cwd']
-                if d.get('type') in ('ai-title', 'custom-title'): titles[p] = d.get('customTitle') or d.get('aiTitle') or titles.get(p, '')
+                if d.get('type') == 'custom-title' and d.get('customTitle'): titles[p] = d['customTitle']; named.add(p)  # /rename wins
+                elif d.get('type') == 'ai-title' and p not in named: titles[p] = d.get('aiTitle') or titles.get(p, '')
                 elif d.get('type') == 'user' and not d.get('isMeta'):
                     c = (d.get('message') or {}).get('content')
                     if isinstance(c, list): c = ' '.join(x.get('text', '') for x in c if isinstance(x, dict) and x.get('type') == 'text')

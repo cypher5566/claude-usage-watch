@@ -32,11 +32,11 @@ tot, last5 = s['total30'] * k, s['last5'] * k
 spike = last5 > 1.5 and last5 / 5 > 3 * max(tot / 30, 0.03)
 over = spike or tot > OVER
 c = R if over else (Y if tot >= OVER / 2 else D)
-lines = [f'{c}{"暴增" if spike else "偏高" if tot > OVER else "正常"} · 全機近 30 分 {spark} US${tot:.1f}（門檻 ${OVER:g}，API 價估算）{X}']
-if over and s.get('tabs'):
+lines = [f'{c}{"暴增" if spike else "偏高" if tot > OVER else "留意" if c == Y else "正常"} · 全機近 30 分 {spark} US${tot:.1f}（門檻 ${OVER:g}，API 價估算）{X}']
+if c != D and s.get('tabs'):
     t = s['tabs'][0]  # the tab to go to: its own session plus all the agents it started
     v = t['usd'] if 'usd' in t else t.get('units', 0) * 3.3
-    lines.append(f'{R}{B}最耗的分頁{X}{R} →「{cut(t["doing"] or t["proj"], 24)}」{"（就是這個視窗）" if t["sid"] == me else ""} US${v:.1f} {D}含它開的 agent · {t["proj"]}{X}{R}；用不到就停掉{X}')
+    lines.append(f'{c}{B}最耗的分頁{X}{c} →「{cut(t["doing"] or t["proj"], 24)}」{"（就是這個視窗）" if t["sid"] == me else ""} US${v:.1f} {D}含它開的 agent · {t["proj"]}{X}{c}{"；用不到就停掉" if over else ""}{X}')
 todo = {'login': '執行 /login', 'limit': '到 claude.ai/settings/usage 提高上限', 'offline': '檢查網路'}
 kname = {'login': '登入失效', 'limit': '用量到上限', 'offline': '連不上網'}
 for kind, b in (s.get('blocked') or {}).items():
